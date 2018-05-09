@@ -1,284 +1,215 @@
-/**
-  ******************************************************************************
-  * @file      startup_stm32l051xx.s
-  * @author    MCD Application Team
-  * @brief     STM32L051xx Devices vector table for Atollic TrueSTUDIO toolchain.
-  *            This module performs:
-  *                - Set the initial SP
-  *                - Set the initial PC == Reset_Handler,
-  *                - Set the vector table entries with the exceptions ISR address
-  *                - Branches to main in the C library (which eventually
-  *                  calls main()).
-  *            After Reset the Cortex-M0+ processor is in Thread mode,
-  *            priority is Privileged, and the Stack is set to Main.
-  ******************************************************************************
-  * 
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
-
-  .syntax unified
-  .cpu cortex-m0plus
-  .fpu softvfp
-  .thumb
-
-.global  g_pfnVectors
-.global  Default_Handler
-
-/* start address for the initialization values of the .data section.
-defined in linker script */
-.word  _sidata
-/* start address for the .data section. defined in linker script */
-.word  _sdata
-/* end address for the .data section. defined in linker script */
-.word  _edata
-/* start address for the .bss section. defined in linker script */
-.word  _sbss
-/* end address for the .bss section. defined in linker script */
-.word  _ebss
-
-    .section  .text.Reset_Handler
-  .weak  Reset_Handler
-  .type  Reset_Handler, %function
-Reset_Handler:  
-   ldr   r0, =_estack
-   mov   sp, r0          /* set stack pointer */
-
-/* Copy the data segment initializers from flash to SRAM */
-  movs  r1, #0
-  b  LoopCopyDataInit
-
-CopyDataInit:
-  ldr  r3, =_sidata
-  ldr  r3, [r3, r1]
-  str  r3, [r0, r1]
-  adds  r1, r1, #4
-
-LoopCopyDataInit:
-  ldr  r0, =_sdata
-  ldr  r3, =_edata
-  adds  r2, r0, r1
-  cmp  r2, r3
-  bcc  CopyDataInit
-  ldr  r2, =_sbss
-  b  LoopFillZerobss
-/* Zero fill the bss segment. */
-FillZerobss:
-  movs  r3, #0
-  str  r3, [r2]
-  adds r2, r2, #4
-
-
-LoopFillZerobss:
-  ldr  r3, = _ebss
-  cmp  r2, r3
-  bcc  FillZerobss
-
-/* Call the clock system intitialization function.*/
-  bl  SystemInit
-/* Call static constructors */
-    bl __libc_init_array
-/* Call the application's entry point.*/
-  bl  main
-
-LoopForever:
-    b LoopForever
-
-
-.size  Reset_Handler, .-Reset_Handler
-
-/**
- * @brief  This is the code that gets called when the processor receives an
- *         unexpected interrupt.  This simply enters an infinite loop, preserving
- *         the system state for examination by a debugger.
+/*
+ * Copyright (c) 2008-2018 Thomas Roell.  All rights reserved.
  *
- * @param  None
- * @retval : None
-*/
-    .section  .text.Default_Handler,"ax",%progbits
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal with the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimers.
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimers in the
+ *     documentation and/or other materials provided with the distribution.
+ *  3. Neither the name of Thomas Roell, nor the names of its contributors
+ *     may be used to endorse or promote products derived from this Software
+ *     without specific prior written permission.
+ *
+ * THE SOFTWARE IS PROVINCED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * WITH THE SOFTWARE.
+ */
+
+        .arch armv6-m
+        .syntax unified
+
+        .section .stack, "aw"
+        .align  3
+#ifdef __STACK_SIZE
+        .space  __STACK_SIZE
+#else
+        .space  2048
+#endif
+
+        .section .isr_vector, "ax"
+        .align  2
+        .globl  __isr_vector
+__isr_vector:
+        .long   0xbe00be00            /* Top of Stack (needs to be 0) */
+        .long   Reset_Handler         /* Reset Handler */
+        .long   NMI_Handler           /* NMI Handler */
+        .long   HardFault_Handler     /* Hard Fault Handler */
+        .long   0                     /* Reserved */
+        .long   0                     /* Reserved */
+        .long   0                     /* Reserved */
+        .long   0                     /* Reserved */
+        .long   0                     /* Reserved */
+        .long   0                     /* Reserved */
+        .long   0                     /* Reserved */
+        .long   SVC_Handler           /* SVCall Handler */
+        .long   0                     /* Reserved */
+        .long   0                     /* Reserved */
+        .long   PendSV_Handler        /* PendSV Handler */
+        .long   SysTick_Handler       /* SysTick Handler */
+
+        /* External interrupts */
+        .long   WWDG_IRQHandler
+        .long   PVD_IRQHandler
+        .long   RTC_IRQHandler
+        .long   FLASH_IRQHandler
+        .long   RCC_CRS_IRQHandler
+        .long   EXTI0_1_IRQHandler
+        .long   EXTI2_3_IRQHandler
+        .long   EXTI4_15_IRQHandler
+        .long   TSC_IRQHandler
+        .long   DMA1_Channel1_IRQHandler
+        .long   DMA1_Channel2_3_IRQHandler
+        .long   DMA1_Channel4_5_6_7_IRQHandler
+        .long   ADC1_COMP_IRQHandler
+        .long   LPTIM1_IRQHandler
+        .long   USART4_5_IRQHandler
+        .long   TIM2_IRQHandler
+        .long   TIM3_IRQHandler
+        .long   TIM6_DAC_IRQHandler
+        .long   TIM7_IRQHandler
+        .long   0
+        .long   TIM21_IRQHandler
+        .long   I2C3_IRQHandler
+        .long   TIM22_IRQHandler
+        .long   I2C1_IRQHandler
+        .long   I2C2_IRQHandler
+        .long   SPI1_IRQHandler
+        .long   SPI2_IRQHandler
+        .long   USART1_IRQHandler
+        .long   USART2_IRQHandler
+        .long   RNG_LPUART1_IRQHandler
+        .long   0
+        .long   USB_IRQHandler
+
+        .size   __isr_vector, . - __isr_vector
+
+
+        .text
+        .thumb
+        .thumb_func
+        .align  2
+        .globl  Reset_Handler
+        .type   Reset_Handler, %function
+Reset_Handler:
+        ldr     r0, =__StackTop
+        mov     sp, r0
+        bl      SystemInit
+        
+        /*
+         *  The __copy_table has the following format per entry:
+         *
+         *    offset 0: LMA of start of a DATA section to copy from
+         *    offset 4: VMA of start of a DATA section to copy to
+         *    offset 8: Size of this DATA sectiony. Must be multiply of 4
+         *
+         *  All addresses must be aligned to 4 bytes boundary.
+         */
+
+        ldr     r1, =__copy_table_start__
+        ldr     r2, =__copy_table_end__
+        b       3f
+1:      ldmia   r1!, { r3, r4, r5 }
+        cmp     r5, #0
+        beq     3f
+2:      subs    r5, #4
+        ldr     r0, [r3, r5]
+        str     r0, [r4, r5]
+        bne     2b
+3:      cmp     r1, r2
+        bne     1b
+
+        /*
+         *  The __zero_table has the following format per entry:
+         *
+         *    offset 0: VMA of start of a BSS section to zero
+         *    offset 4: Size of this BSS section. Must be multiply of 4
+         *
+         *  All addresses must be aligned to 4 bytes boundary.
+         */
+
+        movs    r0, #0
+        ldr     r1, =__zero_table_start__
+        ldr     r2, =__zero_table_end__
+        b       6f
+4:      ldmia   r1!, { r3, r4 }
+        cmp     r4, #0
+        beq     6f
+5:      subs    r4, #4
+        str     r0, [r3, r4]
+        bne     5b
+6:      cmp     r1, r2
+        bne     4b
+        
+#ifndef __START
+#define __START main
+#endif
+        bl      __START
+
+        .size   Reset_Handler, . - Reset_Handler
+
+        .text
+        .thumb
+        .thumb_func
+        .align  2
+        .weak   Default_Handler
+        .type   Default_Handler, %function
 Default_Handler:
-Infinite_Loop:
-  b  Infinite_Loop
-  .size  Default_Handler, .-Default_Handler
-/******************************************************************************
-*
-* The minimal vector table for a Cortex M0.  Note that the proper constructs
-* must be placed on this to ensure that it ends up at physical address
-* 0x0000.0000.
-*
-******************************************************************************/
-   .section  .isr_vector,"a",%progbits
-  .type  g_pfnVectors, %object
-  .size  g_pfnVectors, .-g_pfnVectors
+        b       .
+        .size   Default_Handler, . - Default_Handler
 
+        /*
+         * Macro to define default handlers. Default handler
+         * will be weak symbol and just dead loops. They can be
+         * overwritten by other handlers
+         */
+        .macro  def_irq_handler handler_name
+        .weak   \handler_name
+        .set    \handler_name, Default_Handler
+        .endm
 
-g_pfnVectors:
-  .word  _estack
-  .word  Reset_Handler
-  .word  NMI_Handler
-  .word  HardFault_Handler
-  .word  0
-  .word  0
-  .word  0
-  .word  0
-  .word  0
-  .word  0
-  .word  0
-  .word  SVC_Handler
-  .word  0         
-  .word  0
-  .word  PendSV_Handler
-  .word  SysTick_Handler
-  .word  WWDG_IRQHandler                   /* Window WatchDog              */
-  .word  PVD_IRQHandler                    /* PVD through EXTI Line detection */
-  .word  RTC_IRQHandler                    /* RTC through the EXTI line     */
-  .word  FLASH_IRQHandler                  /* FLASH                        */
-  .word  RCC_IRQHandler                    /* RCC                          */
-  .word  EXTI0_1_IRQHandler                /* EXTI Line 0 and 1            */
-  .word  EXTI2_3_IRQHandler                /* EXTI Line 2 and 3            */
-  .word  EXTI4_15_IRQHandler               /* EXTI Line 4 to 15            */
-  .word  0                                 /* Reserved                     */
-  .word  DMA1_Channel1_IRQHandler          /* DMA1 Channel 1               */
-  .word  DMA1_Channel2_3_IRQHandler        /* DMA1 Channel 2 and Channel 3 */
-  .word  DMA1_Channel4_5_6_7_IRQHandler    /* DMA1 Channel 4, Channel 5, Channel 6 and Channel 7*/
-  .word  ADC1_COMP_IRQHandler              /* ADC1, COMP1 and COMP2        */
-  .word  LPTIM1_IRQHandler                 /* LPTIM1                       */
-  .word  0                                 /* Reserved                     */
-  .word  TIM2_IRQHandler                   /* TIM2                         */
-  .word  0                                 /* Reserved                     */
-  .word  TIM6_IRQHandler                   /* TIM6                         */
-  .word  0               				           /* Reserved                     */
-  .word  0              					          /* Reserved                     */
-  .word  TIM21_IRQHandler                  /* TIM21                        */
-  .word  0                                 /* Reserved                     */
-  .word  TIM22_IRQHandler                  /* TIM22                        */
-  .word  I2C1_IRQHandler                   /* I2C1                         */
-  .word  I2C2_IRQHandler                   /* I2C2                         */
-  .word  SPI1_IRQHandler                   /* SPI1                         */
-  .word  SPI2_IRQHandler                   /* SPI2                         */
-  .word  USART1_IRQHandler                 /* USART1                       */
-  .word  USART2_IRQHandler                 /* USART2                       */
-  .word  LPUART1_IRQHandler                /* LPUART1                      */
-  .word  0                                 /* Reserved                     */
-  .word  0                                 /* Reserved                     */
-
-/*******************************************************************************
-*
-* Provide weak aliases for each Exception handler to the Default_Handler.
-* As they are weak aliases, any function with the same name will override
-* this definition.
-*
-*******************************************************************************/
-
-   .weak      NMI_Handler
-   .thumb_set NMI_Handler,Default_Handler
-
-   .weak      HardFault_Handler
-   .thumb_set HardFault_Handler,Default_Handler
-
-   .weak      SVC_Handler
-   .thumb_set SVC_Handler,Default_Handler
-
-   .weak      PendSV_Handler
-   .thumb_set PendSV_Handler,Default_Handler
-
-   .weak      SysTick_Handler
-   .thumb_set SysTick_Handler,Default_Handler
-
-   .weak      WWDG_IRQHandler
-   .thumb_set WWDG_IRQHandler,Default_Handler
-
-   .weak      PVD_IRQHandler
-   .thumb_set PVD_IRQHandler,Default_Handler
-
-   .weak      RTC_IRQHandler
-   .thumb_set RTC_IRQHandler,Default_Handler
-
-   .weak      FLASH_IRQHandler
-   .thumb_set FLASH_IRQHandler,Default_Handler
-
-   .weak      RCC_IRQHandler
-   .thumb_set RCC_IRQHandler,Default_Handler
-
-   .weak      EXTI0_1_IRQHandler
-   .thumb_set EXTI0_1_IRQHandler,Default_Handler
-
-   .weak      EXTI2_3_IRQHandler
-   .thumb_set EXTI2_3_IRQHandler,Default_Handler
-
-   .weak      EXTI4_15_IRQHandler
-   .thumb_set EXTI4_15_IRQHandler,Default_Handler
-
-   .weak      DMA1_Channel1_IRQHandler
-   .thumb_set DMA1_Channel1_IRQHandler,Default_Handler
-
-   .weak      DMA1_Channel2_3_IRQHandler
-   .thumb_set DMA1_Channel2_3_IRQHandler,Default_Handler
-
-   .weak      DMA1_Channel4_5_6_7_IRQHandler
-   .thumb_set DMA1_Channel4_5_6_7_IRQHandler,Default_Handler
-
-   .weak      ADC1_COMP_IRQHandler
-   .thumb_set ADC1_COMP_IRQHandler,Default_Handler
-
-   .weak      LPTIM1_IRQHandler
-   .thumb_set LPTIM1_IRQHandler,Default_Handler
-
-   .weak      TIM2_IRQHandler
-   .thumb_set TIM2_IRQHandler,Default_Handler
-
-   .weak      TIM6_IRQHandler
-   .thumb_set TIM6_IRQHandler,Default_Handler
-
-   .weak      TIM21_IRQHandler
-   .thumb_set TIM21_IRQHandler,Default_Handler
-
-   .weak      TIM22_IRQHandler
-   .thumb_set TIM22_IRQHandler,Default_Handler
-
-   .weak      I2C1_IRQHandler
-   .thumb_set I2C1_IRQHandler,Default_Handler
-
-   .weak      I2C2_IRQHandler
-   .thumb_set I2C2_IRQHandler,Default_Handler
-
-   .weak      SPI1_IRQHandler
-   .thumb_set SPI1_IRQHandler,Default_Handler
-
-   .weak      SPI2_IRQHandler
-   .thumb_set SPI2_IRQHandler,Default_Handler
-
-   .weak      USART1_IRQHandler
-   .thumb_set USART1_IRQHandler,Default_Handler
-
-   .weak      USART2_IRQHandler
-   .thumb_set USART2_IRQHandler,Default_Handler
-
-   .weak      LPUART1_IRQHandler
-   .thumb_set LPUART1_IRQHandler,Default_Handler
-
-
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
+        def_irq_handler NMI_Handler
+        def_irq_handler HardFault_Handler
+        def_irq_handler SVC_Handler
+        def_irq_handler PendSV_Handler
+        def_irq_handler SysTick_Handler
+        def_irq_handler WWDG_IRQHandler
+        def_irq_handler PVD_IRQHandler
+        def_irq_handler RTC_IRQHandler
+        def_irq_handler FLASH_IRQHandler
+        def_irq_handler RCC_CRS_IRQHandler
+        def_irq_handler EXTI0_1_IRQHandler
+        def_irq_handler EXTI2_3_IRQHandler
+        def_irq_handler EXTI4_15_IRQHandler
+        def_irq_handler TSC_IRQHandler
+        def_irq_handler DMA1_Channel1_IRQHandler
+        def_irq_handler DMA1_Channel2_3_IRQHandler
+        def_irq_handler DMA1_Channel4_5_6_7_IRQHandler
+        def_irq_handler ADC1_COMP_IRQHandler
+        def_irq_handler LPTIM1_IRQHandler
+        def_irq_handler USART4_5_IRQHandler
+        def_irq_handler TIM2_IRQHandler
+        def_irq_handler TIM3_IRQHandler
+        def_irq_handler TIM6_DAC_IRQHandler
+        def_irq_handler TIM7_IRQHandler
+        def_irq_handler TIM21_IRQHandler
+        def_irq_handler I2C3_IRQHandler
+        def_irq_handler TIM22_IRQHandler
+        def_irq_handler I2C1_IRQHandler
+        def_irq_handler I2C2_IRQHandler
+        def_irq_handler SPI1_IRQHandler
+        def_irq_handler SPI2_IRQHandler
+        def_irq_handler USART1_IRQHandler
+        def_irq_handler USART2_IRQHandler
+        def_irq_handler RNG_LPUART1_IRQHandler
+        def_irq_handler USB_IRQHandler

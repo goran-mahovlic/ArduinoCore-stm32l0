@@ -1,4 +1,5 @@
-TOOLS    = /opt/gcc-arm-none-eabi-4.8.3-2014q1
+#TOOLS    = /opt/gcc-arm-none-eabi-4.8.3-2014q1
+TOOLS    = /usr
 CPP      = $(TOOLS)/bin/arm-none-eabi-cpp
 CC       = $(TOOLS)/bin/arm-none-eabi-gcc
 CXX      = $(TOOLS)/bin/arm-none-eabi-g++
@@ -8,15 +9,15 @@ LD       = $(TOOLS)/bin/arm-none-eabi-ld
 CFLAGS   = -mcpu=cortex-m0plus -mthumb -c -g -Os $(WARNINGS) -std=gnu11 -ffunction-sections -fdata-sections -nostdlib -MMD $(EXTRAS) $(DEFINES) $(INCLUDES)
 CXXFLAGS = -mcpu=cortex-m0plus -mthumb -c -g -Os $(WARNINGS) -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib -fno-rtti -fno-exceptions -MMD $(EXTRAS) $(DEFINES) $(INCLUDES)
 ASFLAGS  = -c -g -x assembler-with-cpp $(EXTRAS) $(DEFINES) $(INCLUDES)
-LDFLAGS = -g -Os -mcpu=cortex-m0plus -mthumb -mabi=aapcs -mfloat-abi=soft -Wl,--gc-sections,--no-undefined -T../../variants/STM32L082CZ-Cricket/linker_scripts/STM32L082CZ_FLASH.ld --specs=nano.specs
+LDFLAGS = -g -Os -mcpu=cortex-m0plus -mthumb -mabi=aapcs -mfloat-abi=soft -Wl,--gc-sections,--no-undefined -T../../variants/STM32L051K8T/linker_scripts/STM32L051K8Tx_FLASH.ld --specs=nano.specs
 WARNINGS = -Wall -Wextra -Wno-unused-parameter
-EXTRAS   = -DSTM32L082xx -march=armv6-m -mthumb -mabi=aapcs -mfloat-abi=soft
+EXTRAS   = -DSTM32L051xx -march=armv6-m -mthumb -mabi=aapcs -mfloat-abi=soft
 DEFINES  = -D_SYSTEM_CORE_CLOCK_=32000000 -DDOSFS_SDCARD=0 -DDOSFS_SFLASH=1 -DARDUINO_MAKEFILE
 INCLUDES = \
 	-I../../system/CMSIS/Include \
 	-I../../system/CMSIS/Device/ST/STM32L0xx/Include \
 	-I../../system/STM32L0xx/Include \
-	-I../../variants/STM32L082CZ-Cricket \
+	-I../../variants/STM32L051K8T \
 	-I../../libraries/CayenneLPP/src \
 	-I../../libraries/DOSFS/src \
 	-I../../libraries/EEPROM/src \
@@ -40,17 +41,17 @@ SRCS = \
 	../../libraries/STM32L0/src/STM32L0.cpp \
 	../../libraries/TimerMillis/src/TimerMillis.cpp \
 	../../libraries/Wire/src/Wire.cpp \
-	../../variants/STM32L082CZ-Cricket/variant.cpp \
+	../../variants/STM32L0051K8T/variant.cpp \
 	avr/dtostrf.c \
 	avr/eeprom.c \
 	avr/fdevopen.c \
 	Callback.cpp \
-	CDC.cpp \
+#	CDC.cpp \
 	FS.cpp \
 	HardwareSerial.cpp \
-	HardwareSerial1.cpp \
-	HardwareSerial2.cpp \
-	HardwareSerial3.cpp \
+#	HardwareSerial1.cpp \
+#	HardwareSerial2.cpp \
+#	HardwareSerial3.cpp \
 	HID.cpp \
 	IPAddress.cpp \
 	Print.cpp \
@@ -58,7 +59,7 @@ SRCS = \
 	Stream.cpp \
 	Tone.cpp \
 	Uart.cpp \
-	USBCore.cpp \
+#	USBCore.cpp \
 	WInterrupts.c \
 	WMath.cpp \
 	WString.cpp \
@@ -86,17 +87,17 @@ OBJS = \
 	../../libraries/STM32L0/src/STM32L0.o \
 	../../libraries/TimerMillis/src/TimerMillis.o \
 	../../libraries/Wire/src/Wire.o \
-	../../variants/STM32L082CZ-Cricket/variant.o \
+	../../variants/STM32L051K8T/variant.o \
 	avr/dtostrf.o \
 	avr/eeprom.o \
 	avr/fdevopen.o \
 	Callback.o \
-	CDC.o \
+#	CDC.o \
 	FS.o \
 	HardwareSerial.o \
-	HardwareSerial1.o \
-	HardwareSerial2.o \
-	HardwareSerial3.o \
+#	HardwareSerial1.o \
+#	HardwareSerial2.o \
+#	HardwareSerial3.o \
 	HID.o \
 	IPAddress.o \
 	Print.o \
@@ -104,7 +105,7 @@ OBJS = \
 	Stream.o \
 	Tone.o \
 	Uart.o \
-	USBCore.o \
+#	USBCore.o \
 	WInterrupts.o \
 	WMath.o \
 	WString.o \
@@ -133,7 +134,7 @@ all:: flash.bin
 	$(CC) $(ASFLAGS) -c $< -o $@
 
 flash.elf: $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -L../../system/STM32L0xx/Lib -lstm32l082xx -lm -lc -lgcc -lstm32l082xx -o flash.elf
+	$(CC) $(LDFLAGS) $(OBJS) -L../../system/STM32L0xx/Lib -lstm32l051xx -lm -lc -lgcc -lstm32l051xx -o flash.elf
 
 flash.bin:: flash.elf
 	arm-none-eabi-objcopy -O binary flash.elf flash.bin
