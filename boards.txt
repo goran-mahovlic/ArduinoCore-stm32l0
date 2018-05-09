@@ -263,3 +263,52 @@ B-L072Z-LRWAN1.menu.opt.o3=Fastest
 B-L072Z-LRWAN1.menu.opt.o3.build.flags.optimize=-O3
 B-L072Z-LRWAN1.menu.opt.o3.build.flags.ldspecs=
 
+
+# ST STM32L051K8T
+# ---------------------------------------
+STM32L051K8T.name=STM32L051K8T
+STM32L051K8T.vid.0=0x0483
+STM32L051K8T.pid.0=0x374b
+
+STM32L051K8T.upload.tool=stm32l0_openocd
+STM32L051K8T.upload.protocol=stlink
+STM32L051K8T.upload.maximum_size=65536
+STM32L051K8T.upload.maximum_data_size=20480
+STM32L051K8T.upload.use_1200bps_touch=true
+STM32L051K8T.upload.wait_for_upload_port=false
+STM32L051K8T.upload.native_usb=false
+
+STM32L051K8T.build.mcu=cortex-m0plus
+STM32L051K8T.build.f_cpu=32000000L
+STM32L051K8T.build.board=STM32L051K8T
+STM32L051K8T.build.arch=STM32L0
+STM32L051K8T.build.core=arduino
+STM32L051K8T.build.vid=0x0483
+STM32L051K8T.build.pid=0x374b
+STM32L051K8T.build.did=0xffff
+STM32L051K8T.build.extra_flags=-DSTM32L051xx -march=armv6-m -mthumb -mabi=aapcs -mfloat-abi=soft -fsingle-precision-constant
+STM32L051K8T.build.ldscript=linker_scripts/STM32L051K8Tx_FLASH.ld
+STM32L051K8T.build.openocdscript=openocd_scripts/stm32l051.cfg
+STM32L051K8T.build.variant=STM32L051K8T
+STM32L051K8T.build.variant_system_libs="-L{runtime.platform.path}/system/STM32L0xx/Lib" "-L{runtime.platform.path}/system/CMSIS/Lib" -lstm32l051xx -larm_cortexM0l_math
+STM32L051K8T.build.variant_system_include="-I{runtime.platform.path}/system/CMSIS/Include" "-I{runtime.platform.path}/system/CMSIS/Device/ST/STM32L0xx/Include" "-I{runtime.platform.path}/system/STM32L0xx/Include" 
+
+STM32L051K8T.menu.speed.32=32 MHz
+STM32L051K8T.menu.speed.32.build.f_cpu=32000000L
+STM32L051K8T.menu.speed.16=16 MHz (No USB)
+STM32L051K8T.menu.speed.16.build.f_cpu=16000000L
+STM32L051K8T.menu.speed.4=4.2 MHz (No USB)
+STM32L051K8T.menu.speed.4.build.f_cpu=4200000L
+
+STM32L051K8T.menu.opt.os=Smallest Code
+STM32L051K8T.menu.opt.os.build.flags.optimize=-Os
+STM32L051K8T.menu.opt.os.build.flags.ldspecs=--specs=nano.specs
+STM32L051K8T.menu.opt.o1=Fast
+STM32L051K8T.menu.opt.o1.build.flags.optimize=-O1
+STM32L051K8T.menu.opt.o1.build.flags.ldspecs=
+STM32L051K8T.menu.opt.o2=Faster
+STM32L051K8T.menu.opt.o2.build.flags.optimize=-O2
+STM32L051K8T.menu.opt.o2.build.flags.ldspecs=
+STM32L051K8T.menu.opt.o3=Fastest
+STM32L051K8T.menu.opt.o3.build.flags.optimize=-O3
+STM32L051K8T.menu.opt.o3.build.flags.ldspecs=
