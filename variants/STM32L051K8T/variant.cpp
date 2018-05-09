@@ -61,8 +61,8 @@ extern const PinDescription g_APinDescription[PINS_COUNT] =
     { GPIOB, STM32L0_GPIO_PIN_MASK(STM32L0_GPIO_PIN_PB6),  STM32L0_GPIO_PIN_PB6,            (PIN_ATTR_EXTI),                               PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_NONE },
 
     // 20..25 - Analog pins
-    { GPIOA, STM32L0_GPIO_PIN_MASK(STM32L0_GPIO_PIN_PA8),  STM32L0_GPIO_PIN_PA8,            0,                             				   PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_8    },
-    { GPIOA, STM32L0_GPIO_PIN_MASK(STM32L0_GPIO_PIN_PA9),  STM32L0_GPIO_PIN_PA9,            0,                             				   PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_9    },
+    { GPIOA, STM32L0_GPIO_PIN_MASK(STM32L0_GPIO_PIN_PA8),  STM32L0_GPIO_PIN_PA8,            0,                             				   PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_0    },
+    { GPIOA, STM32L0_GPIO_PIN_MASK(STM32L0_GPIO_PIN_PA9),  STM32L0_GPIO_PIN_PA9,            0,                             				   PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_1    },
     { GPIOA, STM32L0_GPIO_PIN_MASK(STM32L0_GPIO_PIN_PA4),  STM32L0_GPIO_PIN_PA4,            0,                                             PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_4    },
     { NULL,  0,                                            STM32L0_GPIO_PIN_NONE,           0,                                             PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_NONE },
     { NULL,  0,                                            STM32L0_GPIO_PIN_NONE,           0,                                             PWM_INSTANCE_NONE,  PWM_CHANNEL_NONE, ADC_CHANNEL_NONE },
@@ -95,12 +95,12 @@ extern const stm32l0_uart_params_t g_Serial1Params = {
 extern const stm32l0_spi_params_t g_SPIParams = {
     STM32L0_SPI_INSTANCE_SPI1,
     STM32L0_SPI_IRQ_PRIORITY,
-    STM32L0_DMA_CHANNEL_DMA1_CH6_SPI1_RX,
+    STM32L0_DMA_CHANNEL_DMA1_CH2_SPI1_RX,
     STM32L0_DMA_CHANNEL_NONE,
     {
-        STM32L0_GPIO_PIN_PA7_SPI2_MOSI,
-        STM32L0_GPIO_PIN_PA6_SPI2_MISO,
-        STM32L0_GPIO_PIN_PA5_SPI2_SCK,
+        STM32L0_GPIO_PIN_PA7_SPI1_MOSI,
+        STM32L0_GPIO_PIN_PA6_SPI1_MISO,
+        STM32L0_GPIO_PIN_PA5_SPI1_SCK,
         STM32L0_GPIO_PIN_NONE,
     },
 };
