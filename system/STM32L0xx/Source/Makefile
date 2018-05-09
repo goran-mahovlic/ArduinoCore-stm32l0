@@ -96,13 +96,27 @@ SRCS = \
 	stm32l0_usbd_cdc.c \
 	stm32l0_usbd_hid.c
 
+SRCS_L051 = $(SRCS) startup_stm32l051xx.S
+OBJS_L051 = $(patsubst %.c,_out/stm32l051xx/%.o,$(filter-out %.S,$(SRCS_L051))) $(patsubst %.S,_out/stm32l051xx/%.o,$(filter-out %.c,$(SRCS_L051)))
+
 SRCS_L072 = $(SRCS) startup_stm32l072xx.S
 OBJS_L072 = $(patsubst %.c,_out/stm32l072xx/%.o,$(filter-out %.S,$(SRCS_L072))) $(patsubst %.S,_out/stm32l072xx/%.o,$(filter-out %.c,$(SRCS_L072)))
 
 SRCS_L082 = $(SRCS) startup_stm32l082xx.S
 OBJS_L082 = $(patsubst %.c,_out/stm32l082xx/%.o,$(filter-out %.S,$(SRCS_L082))) $(patsubst %.S,_out/stm32l082xx/%.o,$(filter-out %.c,$(SRCS_L082)))
 
-all:: libstm32l072xx.a libstm32l082xx.a
+all:: libstm32l051xx.a libstm32l072xx.a libstm32l082xx.a
+
+libstm32l051xx.a:: $(OBJS_L051)
+        $(AR) rcs $@ $^
+
+_out/stm32l051xx/%.o: %.c
+        -@mkdir -p $(dir $@)
+        $(CC) -DSTM32L051xx $(CFLAGS) -c $< -o $@
+
+_out/stm32l051xx/%.o: %.S
+        -@mkdir -p $(dir $@)
+        $(CC) -DSTM32L051xx $(ASFLAGS) -c $< -o $@
 
 libstm32l072xx.a:: $(OBJS_L072)
 	$(AR) rcs $@ $^
@@ -127,8 +141,9 @@ _out/stm32l082xx/%.o: %.S
 	$(CC) -DSTM32L082xx $(ASFLAGS) -c $< -o $@
 
 clean::
-	rm -rf libstm32l072xx.a libstm32l082xx.a _out
+	rm -rf libstm32l051xx.a libstm32l072xx.a libstm32l082xx.a _out
 
+-include $(OBJS_L051:.o=.d)
 -include $(OBJS_L072:.o=.d)
 -include $(OBJS_L082:.o=.d)
 
