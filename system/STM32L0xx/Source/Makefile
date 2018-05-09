@@ -1,4 +1,4 @@
-TOOLS    = /opt/gcc-arm-none-eabi-4.8.3-2014q1
+TOOLS    = /usr
 CPP      = $(TOOLS)/bin/arm-none-eabi-cpp
 CC       = $(TOOLS)/bin/arm-none-eabi-gcc
 CXX      = $(TOOLS)/bin/arm-none-eabi-g++
@@ -48,20 +48,20 @@ SRCS = \
 	./LoRa/Radio/sx1276/sx1276-board.c \
 	./LoRa/System/timer.c \
 	./LoRa/Utilities/utilities.c \
-	./USB/Class/CDC/Src/usbd_cdc.c \
-	./USB/Class/MSC/Src/usbd_msc.c \
-	./USB/Class/MSC/Src/usbd_msc_bot.c \
-	./USB/Class/MSC/Src/usbd_msc_data.c \
-	./USB/Class/MSC/Src/usbd_msc_scsi.c \
-	./USB/Class/HID/Src/usbd_hid.c \
-	./USB/Core/Src/usbd_core.c \
-	./USB/Core/Src/usbd_ctlreq.c \
-	./USB/Core/Src/usbd_ioreq.c \
-	./USB/HAL/Src/stm32l0xx_hal_pcd.c \
-	./USB/HAL/Src/stm32l0xx_hal_pcd_ex.c \
-	./USB/usbd_cdc_msc.c \
-	./USB/usbd_conf.c \
-	./USB/usbd_desc.c \
+#	./USB/Class/CDC/Src/usbd_cdc.c \
+#	./USB/Class/MSC/Src/usbd_msc.c \
+#	./USB/Class/MSC/Src/usbd_msc_bot.c \
+#	./USB/Class/MSC/Src/usbd_msc_data.c \
+#	./USB/Class/MSC/Src/usbd_msc_scsi.c \
+#	./USB/Class/HID/Src/usbd_hid.c \
+#	./USB/Core/Src/usbd_core.c \
+#	./USB/Core/Src/usbd_ctlreq.c \
+#	./USB/Core/Src/usbd_ioreq.c \
+#	./USB/HAL/Src/stm32l0xx_hal_pcd.c \
+#	./USB/HAL/Src/stm32l0xx_hal_pcd_ex.c \
+#	./USB/usbd_cdc_msc.c \
+#	./USB/usbd_conf.c \
+#	./USB/usbd_desc.c \
 	armv6m_atomic.S \
 	armv6m_core.c \
 	armv6m_event.c \
@@ -93,8 +93,8 @@ SRCS = \
 	stm32l0_system.c \
 	stm32l0_timer.c \
 	stm32l0_uart.c \
-	stm32l0_usbd_cdc.c \
-	stm32l0_usbd_hid.c
+#	stm32l0_usbd_cdc.c \
+#	stm32l0_usbd_hid.c
 
 SRCS_L051 = $(SRCS) startup_stm32l051xx.S
 OBJS_L051 = $(patsubst %.c,_out/stm32l051xx/%.o,$(filter-out %.S,$(SRCS_L051))) $(patsubst %.S,_out/stm32l051xx/%.o,$(filter-out %.c,$(SRCS_L051)))
@@ -108,15 +108,15 @@ OBJS_L082 = $(patsubst %.c,_out/stm32l082xx/%.o,$(filter-out %.S,$(SRCS_L082))) 
 all:: libstm32l051xx.a libstm32l072xx.a libstm32l082xx.a
 
 libstm32l051xx.a:: $(OBJS_L051)
-        $(AR) rcs $@ $^
+	$(AR) rcs $@ $^
 
 _out/stm32l051xx/%.o: %.c
-        -@mkdir -p $(dir $@)
-        $(CC) -DSTM32L051xx $(CFLAGS) -c $< -o $@
+	-@mkdir -p $(dir $@)
+	$(CC) -DSTM32L051xx $(CFLAGS) -c $< -o $@
 
 _out/stm32l051xx/%.o: %.S
-        -@mkdir -p $(dir $@)
-        $(CC) -DSTM32L051xx $(ASFLAGS) -c $< -o $@
+	-@mkdir -p $(dir $@)
+	$(CC) -DSTM32L051xx $(ASFLAGS) -c $< -o $@
 
 libstm32l072xx.a:: $(OBJS_L072)
 	$(AR) rcs $@ $^
