@@ -58,27 +58,27 @@ extern "C"
  *----------------------------------------------------------------------------*/
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (22u)
-#define NUM_DIGITAL_PINS     (16u)
+#define PINS_COUNT           (26u)
+#define NUM_DIGITAL_PINS     (20u)
 #define NUM_ANALOG_INPUTS    (6u)
 #define NUM_ANALOG_OUTPUTS   (0u)
 
 // LEDs
 
-#define PIN_LED              (4ul)
+#define PIN_LED              (9ul)
 #define PIN_LED2             (10ul)
-#define PIN_LED3             (5ul)
+#define PIN_LED3             (11ul)
 #define LED_BUILTIN          PIN_LED
 
 /*
  * Analog pins
  */
-#define PIN_A0               (16ul)
-#define PIN_A1               (17ul)
-#define PIN_A2               (18ul)
-#define PIN_A3               (19ul)
-#define PIN_A4               (20ul)
-#define PIN_A5               (21ul)
+#define PIN_A0               (20ul)
+#define PIN_A1               (21ul)
+#define PIN_A2               (22ul)
+#define PIN_A3               (23ul)
+#define PIN_A4               (24ul)
+#define PIN_A5               (25ul)
 
 static const uint8_t A0  = PIN_A0;
 static const uint8_t A1  = PIN_A1;
@@ -92,31 +92,29 @@ static const uint8_t A5  = PIN_A5;
 /*
  * Other pins
  */
-#define PIN_BUTTON           (6l)
+#define PIN_BUTTON           (12l)
 static const uint8_t BUTTON = PIN_BUTTON;
 
 /*
  * Serial interfaces
  */
 
-#define SERIAL_INTERFACES_COUNT 2
+#define SERIAL_INTERFACES_COUNT 1
 
-#define PIN_SERIAL_RX        (0ul)
-#define PIN_SERIAL_TX        (1ul)
-
-#define PIN_SERIAL1_RX       (2ul)
-#define PIN_SERIAL1_TX       (8ul)
+#define PIN_SERIAL_RX        (8ul)
+#define PIN_SERIAL_TX        (7ul)
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (12u)
-#define PIN_SPI_MOSI         (11u)
-#define PIN_SPI_SCK          (13u)
+#define PIN_SPI_MISO         (5u)
+#define PIN_SPI_MOSI         (6u)
+#define PIN_SPI_SCK          (4u)
+#define PIN_SPI_SS           (1u)
 
-static const uint8_t SS	  = 10;
+static const uint8_t SS	  = PIN_SPI_SS;
 static const uint8_t MOSI = PIN_SPI_MOSI;
 static const uint8_t MISO = PIN_SPI_MISO;
 static const uint8_t SCK  = PIN_SPI_SCK;
@@ -126,8 +124,8 @@ static const uint8_t SCK  = PIN_SPI_SCK;
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (14u)
-#define PIN_WIRE_SCL         (15u)
+#define PIN_WIRE_SDA         (18u)
+#define PIN_WIRE_SCL         (19u)
 
 static const uint8_t SDA = PIN_WIRE_SDA;
 static const uint8_t SCL = PIN_WIRE_SCL;
@@ -165,8 +163,8 @@ extern Uart Serial1;
 //                            pins are NOT connected to anything by default.
 #define SERIAL_PORT_MONITOR         Serial
 #define SERIAL_PORT_HARDWARE1       Serial
-#define SERIAL_PORT_HARDWARE2       Serial1
-#define SERIAL_PORT_HARDWARE_OPEN2  Serial1
+//#define SERIAL_PORT_HARDWARE2       Serial1
+//#define SERIAL_PORT_HARDWARE_OPEN2  Serial1
 
 #endif /*_VARIANT_STM32L051K8T_ */
 
