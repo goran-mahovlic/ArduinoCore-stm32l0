@@ -1,169 +1,231 @@
 /*
-*****************************************************************************
-**
+ * Copyright (c) 2008-2018 Thomas Roell.  All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal with the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimers.
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimers in the
+ *     documentation and/or other materials provided with the distribution.
+ *  3. Neither the name of Thomas Roell, nor the names of its contributors
+ *     may be used to endorse or promote products derived from this Software
+ *     without specific prior written permission.
+ *
+ * THE SOFTWARE IS PROVINCED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * WITH THE SOFTWARE.
+ */
 
-**  File        : LinkerScript.ld
-**
-**  Abstract    : Linker script for STM32L051K8Tx Device with
-**                64KByte FLASH, 8KByte RAM
-**
-**                Set heap size, stack size and stack location according
-**                to application requirements.
-**
-**                Set memory bank area and size if external memory is used.
-**
-**  Target      : STMicroelectronics STM32
-**
-**
-**  Distribution: The file is distributed as is, without any warranty
-**                of any kind.
-**
-**  (c)Copyright Ac6.
-**  You may use this file as-is or modify it according to the needs of your
-**  project. Distribution of this file (unmodified or modified) is not
-**  permitted. Ac6 permit registered System Workbench for MCU users the
-**  rights to distribute the assembled, compiled & linked contents of this
-**  file as part of an application binary file, provided that it is built
-**  using the System Workbench for MCU toolchain.
-**
-*****************************************************************************
-*/
 
-/* Entry Point */
-ENTRY(Reset_Handler)
+/* Linker script to place sections and symbol values. Should be used together
+ * with other linker script that defines memory regions FLASH and RAM.
+ * It references following symbols, which must be defined in code:
+ *   Reset_Handler : Entry of reset handler
+ * 
+ * It defines following symbols, which code can use without definition:
+ *   __exidx_start
+ *   __exidx_end
+ *   __copy_table_start__
+ *   __copy_table_end__
+ *   __zero_table_start__
+ *   __zero_table_end__
+ *   __etext
+ *   __data_start__
+ *   __preinit_array_start
+ *   __preinit_array_end
+ *   __init_array_start
+ *   __init_array_end
+ *   __fini_array_start
+ *   __fini_array_end
+ *   __data_end__
+ *   __bss_start__
+ *   __bss_end__
+ *   __end__
+ *   end
+ *   __HeapLimit
+ *   __StackLimit
+ *   __StackTop
+ *   __stack
+ *   __FlashBase
+ *   __FlashLimit
+ *
+ * STM32L0 likes to see .text/.data to be 64 byte aligned.
+ */
 
-/* Highest address of the user mode stack */
-_estack = 0x20002000;    /* end of RAM */
-/* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x200;      /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
-
-/* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 8K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 64K
+   FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 0x00030000
+   SRAM  (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00005000
 }
 
-/* Define output sections */
+ENTRY(Reset_Handler)
+
 SECTIONS
 {
-  /* The startup code goes first into FLASH */
-  .isr_vector :
-  {
-    . = ALIGN(4);
-    KEEP(*(.isr_vector)) /* Startup code */
-    . = ALIGN(4);
-  } >FLASH
+   .text : ALIGN(64)
+   {
+       KEEP(*(.isr_vector));
 
-  /* The program code and other data goes into FLASH */
-  .text :
-  {
-    . = ALIGN(4);
-    *(.text)           /* .text sections (code) */
-    *(.text*)          /* .text* sections (code) */
-    *(.glue_7)         /* glue arm to thumb code */
-    *(.glue_7t)        /* glue thumb to arm code */
-    *(.eh_frame)
+       *(.text .text.* .gnu.linkonce.t.*)
 
-    KEEP (*(.init))
-    KEEP (*(.fini))
+       KEEP(*(.init))
+       KEEP(*(.fini))
 
-    . = ALIGN(4);
-    _etext = .;        /* define a global symbols at end of code */
-  } >FLASH
+       /* .ctors */
+       *crtbegin.o(.ctors)
+       *crtbegin?.o(.ctors)
+       *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+       *(SORT(.ctors.*))
+       *(.ctors)
 
-  /* Constant data goes into FLASH */
-  .rodata :
-  {
-    . = ALIGN(4);
-    *(.rodata)         /* .rodata sections (constants, strings, etc.) */
-    *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    . = ALIGN(4);
-  } >FLASH
+       /* .dtors */
+       *crtbegin.o(.dtors)
+       *crtbegin?.o(.dtors)
+       *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+       *(SORT(.dtors.*))
+       *(.dtors)
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
-  .ARM : {
-    __exidx_start = .;
-    *(.ARM.exidx*)
-    __exidx_end = .;
-  } >FLASH
+       *(.rodata .rodata.* .gnu.linkonce.r.*)
 
-  .preinit_array     :
-  {
-    PROVIDE_HIDDEN (__preinit_array_start = .);
-    KEEP (*(.preinit_array*))
-    PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
-  .init_array :
-  {
-    PROVIDE_HIDDEN (__init_array_start = .);
-    KEEP (*(SORT(.init_array.*)))
-    KEEP (*(.init_array*))
-    PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
-  .fini_array :
-  {
-    PROVIDE_HIDDEN (__fini_array_start = .);
-    KEEP (*(SORT(.fini_array.*)))
-    KEEP (*(.fini_array*))
-    PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+       KEEP(*(.eh_frame*))
 
-  /* used by the startup to initialize data */
-  _sidata = LOADADDR(.data);
+       /* preinit data */
+       PROVIDE_HIDDEN (__preinit_array_start = .);
+       KEEP(*(.preinit_array))
+       PROVIDE_HIDDEN (__preinit_array_end = .);
 
-  /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
-  {
-    . = ALIGN(4);
-    _sdata = .;        /* create a global symbol at data start */
-    *(.data)           /* .data sections */
-    *(.data*)          /* .data* sections */
+       /* init data */
+       PROVIDE_HIDDEN (__init_array_start = .);
+       KEEP(*(SORT(.init_array.*)))
+       KEEP(*(.init_array))
+       PROVIDE_HIDDEN (__init_array_end = .);
 
-    . = ALIGN(4);
-    _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+       /* finit data */
+       PROVIDE_HIDDEN (__fini_array_start = .);
+       KEEP(*(SORT(.fini_array.*)))
+       KEEP(*(.fini_array))
+       PROVIDE_HIDDEN (__fini_array_end = .);
 
-  
-  /* Uninitialized data section */
-  . = ALIGN(4);
-  .bss :
-  {
-    /* This is used by the startup in order to initialize the .bss secion */
-    _sbss = .;         /* define a global symbol at bss start */
-    __bss_start__ = _sbss;
-    *(.bss)
-    *(.bss*)
-    *(COMMON)
+       . = ALIGN(4);
+     __copy_table_start__ = .;
+       LONG (LOADADDR(.data))
+       LONG (__data_start__)
+       LONG (__data_end__ - __data_start__)
+     __copy_table_end__ = .;
+     __zero_table_start__ = .;
+       LONG (__bss_start__)
+       LONG (__bss_end__ - __bss_start__)
+     __zero_table_end__ = .;
+       . = ALIGN(64);
+   } > FLASH
 
-    . = ALIGN(4);
-    _ebss = .;         /* define a global symbol at bss end */
-    __bss_end__ = _ebss;
-  } >RAM
+   .ARM.extab :
+   {
+       *(.ARM.extab* .gnu.linkonce.armextab.*)
+   } > FLASH
 
-  /* User_heap_stack section, used to check that there is enough RAM left */
-  ._user_heap_stack :
-  {
-    . = ALIGN(8);
-    PROVIDE ( end = . );
-    PROVIDE ( _end = . );
-    . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
-    . = ALIGN(8);
-  } >RAM
+   .ARM.exidx :
+   {
+       PROVIDE_HIDDEN(__exidx_start = .);
+       *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+       PROVIDE_HIDDEN(__exidx_end = .);
+   } > FLASH
 
-  
+   __etext = . ;
 
-  /* Remove information from the standard libraries */
-  /DISCARD/ :
-  {
-    libc.a ( * )
-    libm.a ( * )
-    libgcc.a ( * )
-  }
+   .stack (NOLOAD) :
+   {
+     __StackLimit = .;
+       KEEP(*(.stack .stack.*))
+     . = ALIGN(1024);
+     __StackTop = .;
+     PROVIDE(__stack = __StackTop);
+   } > SRAM
 
-  .ARM.attributes 0 : { *(.ARM.attributes) }
+   .data : ALIGN(64)
+   {
+     __data_start__ = .;
+       *(.ramfunc .ramfunc.*)
+     . = ALIGN(8);
+       *(vtable)
+     . = ALIGN(8);
+       *(.data .data.* .gnu.linkonce.d.*)
+     . = ALIGN(8);
+     __data_end__ = .;
+     . = ALIGN(64);
+   } > SRAM AT > FLASH
+
+   .bss (NOLOAD) :
+   {
+     __bss_start__ = .;
+       *(.bss .bss.* .gnu.linkonce.b.*)
+       *(COMMON)
+       . = ALIGN(8);
+     __bss_end__ = .;
+   } > SRAM
+
+   .noinit (NOLOAD) :
+   {
+       *(.noinit .noinit.*)
+       . = ALIGN(8);
+   } > SRAM
+
+   __end__ = . ;
+   PROVIDE(end = .);
+
+   __HeapLimit = ORIGIN(SRAM) + LENGTH(SRAM);
+   __FlashBase = ALIGN(LOADADDR(.data) + SIZEOF(.data), 128);
+   __FlashLimit = ORIGIN(FLASH) + LENGTH(FLASH);
+
+   /* Stabs debugging sections.  */
+   .stab          0 : { *(.stab) }
+   .stabstr       0 : { *(.stabstr) }
+   .stab.excl     0 : { *(.stab.excl) }
+   .stab.exclstr  0 : { *(.stab.exclstr) }
+   .stab.index    0 : { *(.stab.index) }
+   .stab.indexstr 0 : { *(.stab.indexstr) }
+   .comment       0 : { *(.comment) }
+   /* DWARF debug sections.
+      Symbols in the DWARF debugging sections are relative to the beginning
+      of the section so we begin them at 0.  */
+   /* DWARF 1 */
+   .debug          0 : { *(.debug) }
+   .line           0 : { *(.line) }
+   /* GNU DWARF 1 extensions */
+   .debug_srcinfo  0 : { *(.debug_srcinfo) }
+   .debug_sfnames  0 : { *(.debug_sfnames) }
+   /* DWARF 1.1 and DWARF 2 */
+   .debug_aranges  0 : { *(.debug_aranges) }
+   .debug_pubnames 0 : { *(.debug_pubnames) }
+   /* DWARF 2 */
+   .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+   .debug_abbrev   0 : { *(.debug_abbrev) }
+   .debug_line     0 : { *(.debug_line) }
+   .debug_frame    0 : { *(.debug_frame) }
+   .debug_str      0 : { *(.debug_str) }
+   .debug_loc      0 : { *(.debug_loc) }
+   .debug_macinfo  0 : { *(.debug_macinfo) }
+   /* SGI/MIPS DWARF 2 extensions */
+   .debug_weaknames 0 : { *(.debug_weaknames) }
+   .debug_funcnames 0 : { *(.debug_funcnames) }
+   .debug_typenames 0 : { *(.debug_typenames) }
+   .debug_varnames  0 : { *(.debug_varnames) }
+   /* DWARF 3 */
+   .debug_pubtypes 0 : { *(.debug_pubtypes) }
+   .debug_ranges   0 : { *(.debug_ranges) }
+   /* DWARF Extension.  */
+   .debug_macro    0 : { *(.debug_macro) }
+   .ARM.attributes 0 : { KEEP (*(.ARM.attributes)) KEEP (*(.gnu.attributes)) }
+   .note.gnu.arm.ident 0 : { KEEP (*(.note.gnu.arm.ident)) }
+   /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) *(.gnu.lto_*) }
 }
-
-

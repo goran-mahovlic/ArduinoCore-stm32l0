@@ -90,7 +90,6 @@ __isr_vector:
         .long   USART2_IRQHandler
         .long   RNG_LPUART1_IRQHandler
         .long   0
-        .long   USB_IRQHandler
 
         .size   __isr_vector, . - __isr_vector
 
@@ -212,4 +211,3 @@ Default_Handler:
         def_irq_handler USART1_IRQHandler
         def_irq_handler USART2_IRQHandler
         def_irq_handler RNG_LPUART1_IRQHandler
-        def_irq_handler USB_IRQHandler
